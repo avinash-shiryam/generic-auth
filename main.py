@@ -1,16 +1,22 @@
-from config import config_functions
-
+from decorator import decorator
 """
 Authentication and Authorisation adapter module
 """
 
-def adapter_data(**kwargs):
-    main_dict = kwargs
+auth_class_dict = {}
+@decorator
+class AuthEngine:
 
-class mainAdapter:
+    def __init__(self, calling_function,*args, **kwargs):
+        self.calling_function = calling_function
 
-    def __init__(self, auth_tool):
-        self.auth_tool = auth_tool
+    def __call__(self,*args,**kwargs):
+        try:
+            self.select_auth_class(*args,**kwargs)
+        except:
+            return "some shit json again with an error"
 
-    def selector_func(self):        
-        config_functions(self.auth_tool)()
+    def select_auth_class(self,*args,**kwargs):
+        self.auth_type = kwargs.get("auth_type")
+        auth_class_dict[self.auth_type](**kwargs)
+        return self.calling_function(*args,**kwargs)
