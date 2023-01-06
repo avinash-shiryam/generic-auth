@@ -15,11 +15,19 @@ class AWSAuth:
 
     def __init__(self,*args,**kwargs):
         self.t1_start = perf_counter()
-        self.executor_dict = {}
+        self.executor_dict = {"init":self.parse_headers,"headers_pass": self.validate_auth_and_check_source }
         self.executor_function(status_token="init",*args,**kwargs)
 
-    def executor_function(status_token,*args,**kwargs):
-        pass
+    def executor_function(self,status_token,*args,**kwargs):
+        """
+        Executor function takes care of sending the flow to next stage
+        """
+        if status_token is "header_fail" or "auth_fail":
+            return f"procedure failed with error {status_token}"
+        elif status_token == "finished":
+            return "executed"
+        else:
+            self.executor_dict[status_token](*args,**kwargs)
 
     def get_contents(self,token):
         """
@@ -74,28 +82,38 @@ class AWSAuth:
             # Issuer claim mismatch
             raise exception_utils.UserUnauthorizedError(message="Authentication failed")
     
-    def check_multi_login_feature(token, group_names, sub):
+    def check_multi_login_feature(self,token, group_names, sub):
         """
         Multi Login feature check and invoke
         Multi session feature support enable or disable as per env
         """
         if ConfigVariable.IS_SECURE:
-            if CONSTANT_GROUPNAME not in group_names and not _check_session_validity(
+            if CONSTANT_GROUPNAME not in group_names and not self._check_session_validity(
                     current_token=token, user_sub=sub, groups=group_names
             ):
                 raise exception_utils.UserUnauthorizedError(message="multiple sessions not allowed")
 
     def parse_headers(self,*args,**kwargs):
-        if "AUTHORIZATION" in request.headers or "auth_token" in request.view_args:
-            self.token = request.headers.get('AUTHORIZATION') or request.view_args.get('auth_token')
-            message, public_key, decoded_signature = self.get_contents(self.token)
-            # verify the signature
-            if not public_key.verify(message.encode("utf8"), decoded_signature):
-                # Signature verification failed
-                logging.info("signature verification failed")
-                raise exception_utils.UserUnauthorizedError(message="Authentication failed")
+        try:
+            if "AUTHORIZATION" in request.headers or "auth_token" in request.view_args:
+                self.token = request.headers.get('AUTHORIZATION') or request.view_args.get('auth_token')
+                message, public_key, decoded_signature = self.get_contents(self.token)
+                # verify the signature
+                if not public_key.verify(message.encode("utf8"), decoded_signature):
+                    # Signature verification failed
+                    logging.info("signature verification failed")
+                    #return to executor_function as failed
+                    self.executor_function(status_token="header_fail")
+                    raise exception_utils.UserUnauthorizedError(message="Authentication failed")
 
-    def validate_auth(self,*args,**kwargs):
+                else:
+                    #return to executor_function as passed
+                    self.executor_function(status_token="header_pass")
+                    
+        except:
+            pass
+
+    def validate_auth_and_check_source(self,*args,**kwargs):
         # Signature verification Successful. Retrieve claims and verify
         claims = jwt.get_unverified_claims(self.token)
         self.validate_claims(claims)
@@ -104,10 +122,6 @@ class AWSAuth:
         # Multi session feature
         self.check_multi_login_feature(self.token, self.group_names, sub)
         self.user_obj = user.User.fetch_by_provided_data(params={"user_sub": sub})
-        
-        
-
-    def check_source(self,*args,**kwargs):
         if CONSTANT_GROUPNAME not in self.group_names:
             if not self.user_obj:
                 logging.info("no user")
@@ -127,6 +141,8 @@ class AWSAuth:
         kwargs["group_names"] = self.group_names
         t1_stop = perf_counter()
         logging.info("Elapsed time for cognito decorator in seconds: %s", t1_stop - self.t1_start)
-        return "something"
+        return self.executor_function(status_token="finished")
+    executor_function(status_token="auth_fail")
     raise exception_utils.NoAuthTokenPresentError
+    
         
