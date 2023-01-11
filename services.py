@@ -138,6 +138,16 @@ class AWSAuth:
             logging.info("Elapsed time for cognito decorator in seconds: %s", t1_stop - self.t1_start)
         except:
             raise exception_utils.NoAuthTokenPresentError
+
+class FirebaseAuth():
+    
+    def __init__(self,*args,**kwargs):
+        pass
+
+    def function1(self,*args,**kwargs):
+        pass
+    
+    pass
             
     
         
