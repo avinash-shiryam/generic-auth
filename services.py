@@ -1,23 +1,33 @@
-from flask import request,g
-from jose import jwk,jwt
-from jose.utils import base64url_decode
 import requests
 import json
 import logging
-from config import ConfigVariable
-from utils import exception_utils, user_utils
-from constants import CONSTANT_GROUPNAME
-from app.models.user import user
-from datetime import datetime
-from time import perf_counter
 import time
+import functools
+import jwt
+import bugsnag
+import pytz
+import os
+import logging as log
+from jwt import ExpiredSignatureError
+from time import perf_counter
+from datetime import datetime
+from app.models.user import user
+from firebase_files import google_client
+from constants import CONSTANT_GROUPNAME
+from utils import exception_utils, user_utils
+from utils.user_utils import response_dict
+from config import ConfigVariable
+from flask import request,g
+from jose import jwk,jwt
+from jose.utils import base64url_decode
+
 class AWSAuth:
 
     def __init__(self,*args,**kwargs):
         self.t1_start = perf_counter()
         self.executor_function(*args,**kwargs)
 
-    def executor_function(self,status_token,*args,**kwargs):
+    def executor_function(self,*args,**kwargs):
         """
         Executor function takes care of sending the flow to next stage
         """
@@ -139,15 +149,88 @@ class AWSAuth:
         except:
             raise exception_utils.NoAuthTokenPresentError
 
+
 class FirebaseAuth():
     
     def __init__(self,*args,**kwargs):
+        self.executor_function(*args,**kwargs)
+
+    def executor_function(self,*args,**kwargs):
+        self.parse_headers(*args,**kwargs)
+        self.validate_auth(*args,**kwargs)
+        self.check_source_truth(*args,**kwargs)
+
+    def parse_headers(self,*args,**kwargs):
+        if "AUTHORIZATION" in request.headers:
+            auth_token = request.headers["AUTHORIZATION"]
+            token_info = auth_token.split(" ")
+            type_ = token_info[0]
+            if type_ != "Bearer":
+                return response_dict(status=401, data=None, message="Invalid auth token type")
+            self.auth_token = token_info[1]
+        
+        else:
+            return response_dict(status=401, data=None, message="Incorrect auth token type")
+
+    def validate_auth(self,*args,**kwargs):
+        if self.auth_token:
+                try:
+                    decoded_token = google_client.verify_id_token(self.auth_token)
+                    kwargs['user_sub'] = decoded_token.get('sub')
+                    kwargs['email'] = decoded_token.get('email')
+                    kwargs['firebase_phone'] = decoded_token.get("phone_number")
+
+                    self.payload = jwt.decode(self.auth_token, os.getenv("SECRET_KEY"), algorithms="HS256")
+                except ExpiredSignatureError:
+                    return response_dict(status=401, data=None, message="Signature expired, login again")
+                except Exception as e:
+                    return response_dict(status=401, data=None, message="jwt decode error: %s" % str(e))
+        else:
+            return response_dict(status=401, data=None, message="No Authorization")
+
+    def check_source_truth(self,*args,**kwargs):
+        self.user_sub = self.payload.get("user_sub")
+        kwargs['user_sub'] = self.user_sub
+        kwargs['email'] = firebase_user_obj.email
+        firebase_user_obj = google_client.get_user(self.user_sub)
+        # assumed firebase_user_obj.email carries a unique_user_id
+        unique_user_id = (firebase_user_obj.email).get("unique_user_id")
+
+        #Considering genericness, assumed a single user type
+        user_obj = user()
+
+        if unique_user_id:
+            filter_params = {"user_type": self.payload.get('user_type'), 'unique_user_id': unique_user_id}
+            user_obj.update(
+                filter_params=filter_params,
+                update_params={'last_accessed': datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S")},
+            )
+        try:
+            return response_dict(status=201, data=None, message="Source of Truth verification successful")
+        except Exception as e:
+            bugsnag.notify(e)
+            return response_dict(status=500, data=None, message="Internal Server Error")
+    
+
+
+
+class exampleAuthFunction():
+    
+    def __init__(self,*args,**kwargs):
+        self.executor_function(*args,**kwargs)
+
+    def executor_function(self,*args,**kwargs):
         pass
 
-    def function1(self,*args,**kwargs):
+    def parse_headers(self,*args,**kwargs):
+        pass
+
+    def validate_auth(self,*args,**kwargs):
+        pass
+
+    def check_source_truth(self,*args,**kwargs):
         pass
     
-    pass
             
     
         
