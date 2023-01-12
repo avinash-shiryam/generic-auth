@@ -214,13 +214,68 @@ class FirebaseAuth():
 
 
 
+class customAuthVerification():
+    
+    def __init__(self,*args,**kwargs):
+        self.executor_function(*args,**kwargs)
+
+    def executor_function(self,*args,**kwargs):
+        self.parse_headers(*args,**kwargs)
+        self.validate_auth(*args,**kwargs)
+        self.check_source_truth(*args,**kwargs)
+
+    def parse_headers(self,*args,**kwargs):
+        if "AUTHORIZATION" in request.headers:
+            token = request.headers["AUTHORIZATION"]
+            token_info = token.split(" ")
+            type_ = token_info[0]
+            if type_ != "Bearer":
+                return response_dict(status=401, data=None, message="Invalid auth token type")
+            auth_token = token_info[1]
+            if auth_token:
+                try:
+                    self.payload = jwt.decode(auth_token, os.getenv("SECRET_KEY"), algorithms="HS256")
+                except ExpiredSignatureError:
+                    return response_dict(status=401, data=None, message="Signature expired, login again")
+                except Exception as e:
+                    return response_dict(status=401, data=None, message="jwt decode error: %s" % str(e))
+
+    def validate_auth(self,*args,**kwargs):
+        user_sub = self.payload["user_sub"]
+        # FIXME: will be used in future, fow now disabled.
+        # auth_token_info_cache = redis_utils.get(key=user_sub)
+        # auth_token_cache = auth_token_info_cache.get(requester_ip)
+
+        # if auth_token_cache != token:
+        #    log.info("request from ip: %s" % requester_ip)
+        #    return response_dict(status=401, data=None, message="Multiple login, please logout first")
+
+        kwargs['user_sub'] = user_sub
+        kwargs['user_type'] = self.payload.get('user_type')
+        firebase_user_obj = google_client.get_user(user_sub)
+        kwargs['email'] = firebase_user_obj.email
+
+        if self.payload.get('user_type') == "candidate":
+            user_type_obj = Candidate()
+        elif self.payload.get('user_type') == "employer":
+            user_type_obj = Employer()
+        elif self.payload.get('user_type') == "operation":
+            user_type_obj = Operation()
+        else:
+            return response_dict(status=500, data=None, message="Invalid user type")
+
+    def check_source_truth(self,*args,**kwargs):
+        pass
+
 class exampleAuthFunction():
     
     def __init__(self,*args,**kwargs):
         self.executor_function(*args,**kwargs)
 
     def executor_function(self,*args,**kwargs):
-        pass
+        self.parse_headers(*args,**kwargs)
+        self.validate_auth(*args,**kwargs)
+        self.check_source_truth(*args,**kwargs)
 
     def parse_headers(self,*args,**kwargs):
         pass

@@ -5,7 +5,7 @@ Authentication and Authorisation adapter module
 from decorator import decorator
 import services
 
-auth_class_dict = {"aws" : services.AWSAuth}
+auth_class_dict = {"aws" : services.AWSAuth, "firebase" : services.FirebaseAuth, "custom_auth" : services.customAuthVerification}
 @decorator
 class AuthEngine:
 
