@@ -3,9 +3,9 @@ Authentication and Authorisation adapter module
 """
 
 from decorator import decorator
-import services
+from connectors import AWSConnector,firebaseConnector,customAuthConnector
 
-auth_class_dict = {"aws" : services.AWSAuth, "firebase" : services.FirebaseAuth, "custom_auth" : services.customAuthVerification}
+auth_class_dict = {"aws" : AWSConnector.AWSAuth, "firebase" : firebaseConnector.FirebaseAuth, "custom_auth" : customAuthConnector.customAuthVerification}
 @decorator
 class AuthEngine:
 

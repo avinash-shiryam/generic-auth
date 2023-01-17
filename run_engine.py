@@ -1,4 +1,4 @@
-from main import AuthEngine
+from Engine.main import AuthEngine
 
 """
 ->example function which uses the AuthEngine as a decorator and performs the authentication process
