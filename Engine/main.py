@@ -9,9 +9,9 @@ auth_class_dict = {"aws" : AWSConnector.AWSAuth, "firebase" : firebaseConnector.
 @decorator
 class AuthEngine:
 
-    def __init__(self, calling_function,*args, **kwargs):
+    def __init__(self,*args, **kwargs):
 
-        self.calling_function = calling_function
+        self.calling_function = kwargs.get("calling_function")
         self.select_auth_class(*args,**kwargs)
 
     def select_auth_class(self,*args,**kwargs):

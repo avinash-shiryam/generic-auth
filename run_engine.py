@@ -5,6 +5,10 @@ from Engine.main import AuthEngine
 To run:
 1. 
 """
+
 @AuthEngine
 def runner_function(*args,**kwargs):
     return "functione executed successfully"
+
+# need to instantsiate the function with the calling_function variable
+runner_function(calling_function="aws")
