@@ -27,3 +27,6 @@
 3. Run!
 
 
+##### Still confused?. Checkout the *exampleAuth.py* inside **examples/** directory
+
+
