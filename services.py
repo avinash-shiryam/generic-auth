@@ -12,7 +12,7 @@ from jwt import ExpiredSignatureError
 from time import perf_counter
 from datetime import datetime
 from app.models.user import user
-from firebase_files import google_client
+from local_utils import google_client
 from constants import CONSTANT_GROUPNAME
 from utils import exception_utils, user_utils
 from utils.user_utils import response_dict
@@ -21,7 +21,9 @@ from flask import request,g
 from jose import jwk,jwt
 from jose.utils import base64url_decode
 
-class AWSAuth:
+from local_utils import exampleAuthFunction
+
+class AWSAuth(exampleAuthFunction):
 
     def __init__(self,*args,**kwargs):
         self.t1_start = perf_counter()
@@ -100,9 +102,11 @@ class AWSAuth:
                 raise exception_utils.UserUnauthorizedError(message="multiple sessions not allowed")
 
     def parse_headers(self,*args,**kwargs):
-        if "AUTHORIZATION" in request.headers or "auth_token" in request.view_args:
-            self.token = request.headers.get('AUTHORIZATION') or request.view_args.get('auth_token')
-            message, public_key, decoded_signature = self.get_contents(self.token)
+        super.parse_headers(*args,**kwargs)
+        self.auth_token = super.parse_headers(*args,**kwargs)
+        if self.auth_token:
+            self.auth_token = request.headers.get('AUTHORIZATION') or request.view_args.get('auth_token')
+            message, public_key, decoded_signature = self.get_contents(self.auth_token)
             # verify the signature
             if not public_key.verify(message.encode("utf8"), decoded_signature):
                 # Signature verification failed
@@ -114,7 +118,7 @@ class AWSAuth:
     def validate_auth(self,*args,**kwargs):
         try:
             # Signature verification Successful. Retrieve claims and verify
-            claims = jwt.get_unverified_claims(self.token)
+            claims = jwt.get_unverified_claims(self.auth_token)
             self.validate_claims(claims)
             self.sub = claims.get("sub")
             self.group_names = claims.get("cognito:groups", [])
@@ -125,7 +129,7 @@ class AWSAuth:
     def check_source_truth(self,*args,**kwargs):
         try:
             # Multi session feature
-            self.check_multi_login_feature(self.token, self.group_names, self.sub)
+            self.check_multi_login_feature(self.auth_token, self.group_names, self.sub)
             self.user_obj = user.User.fetch_by_provided_data(params={"user_sub": self.sub})
             if CONSTANT_GROUPNAME not in self.group_names:
                 if not self.user_obj:
@@ -150,7 +154,7 @@ class AWSAuth:
             raise exception_utils.NoAuthTokenPresentError
 
 
-class FirebaseAuth():
+class FirebaseAuth(exampleAuthFunction):
     
     def __init__(self,*args,**kwargs):
         self.executor_function(*args,**kwargs)
@@ -161,16 +165,17 @@ class FirebaseAuth():
         self.check_source_truth(*args,**kwargs)
 
     def parse_headers(self,*args,**kwargs):
-        if "AUTHORIZATION" in request.headers:
-            auth_token = request.headers["AUTHORIZATION"]
-            token_info = auth_token.split(" ")
-            type_ = token_info[0]
-            if type_ != "Bearer":
-                return response_dict(status=401, data=None, message="Invalid auth token type")
-            self.auth_token = token_info[1]
-        
-        else:
-            return response_dict(status=401, data=None, message="Incorrect auth token type")
+
+        self.auth_token = super.parse_headers(*args,**kwargs)
+        if self.auth_token:
+                token_info = self.auth_token.split(" ")
+                type_ = token_info[0]
+                if type_ != "Bearer":
+                    return response_dict(status=401, data=None, message="Invalid auth token type")
+                self.auth_token = token_info[1]
+            
+            else:
+                return response_dict(status=401, data=None, message="Incorrect auth token type")
 
     def validate_auth(self,*args,**kwargs):
         if self.auth_token:
@@ -214,7 +219,7 @@ class FirebaseAuth():
 
 
 
-class customAuthVerification():
+class customAuthVerification(exampleAuthFunction):
     
     def __init__(self,*args,**kwargs):
         self.executor_function(*args,**kwargs)
@@ -225,6 +230,7 @@ class customAuthVerification():
         self.check_source_truth(*args,**kwargs)
 
     def parse_headers(self,*args,**kwargs):
+        super.parse_headers(*args,**kwargs)
         if "AUTHORIZATION" in request.headers:
             token = request.headers["AUTHORIZATION"]
             token_info = token.split(" ")
@@ -265,26 +271,9 @@ class customAuthVerification():
             return response_dict(status=500, data=None, message="Invalid user type")
 
     def check_source_truth(self,*args,**kwargs):
+        super.check_source_truth(*args,**kwargs)
         pass
 
-class exampleAuthFunction():
-    
-    def __init__(self,*args,**kwargs):
-        self.executor_function(*args,**kwargs)
-
-    def executor_function(self,*args,**kwargs):
-        self.parse_headers(*args,**kwargs)
-        self.validate_auth(*args,**kwargs)
-        self.check_source_truth(*args,**kwargs)
-
-    def parse_headers(self,*args,**kwargs):
-        pass
-
-    def validate_auth(self,*args,**kwargs):
-        pass
-
-    def check_source_truth(self,*args,**kwargs):
-        pass
     
             
     
