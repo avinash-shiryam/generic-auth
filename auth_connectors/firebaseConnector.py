@@ -9,9 +9,9 @@ class FirebaseAuth(exampleAuthFunction):
         self.executor_function(*args,**kwargs)
 
     def executor_function(self,*args,**kwargs):
-        self.parse_headers(*args,**kwargs)
-        self.validate_auth(*args,**kwargs)
-        self.check_source_truth(*args,**kwargs)
+        self.parse_headers(self)
+        self.validate_auth(self)
+        self.check_source_truth(self)
 
     def parse_headers(self,*args,**kwargs):
         self.auth_token = super.parse_headers()

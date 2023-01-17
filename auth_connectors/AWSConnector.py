@@ -15,9 +15,9 @@ class AWSAuth(exampleAuthFunction):
         """
         Executor function takes care of sending the flow to next stage
         """
-        self.parse_headers(*args,**kwargs)
-        self.validate_auth(*args,**kwargs)
-        self.check_source_truth(*args,**kwargs)
+        self.parse_headers(self)
+        self.validate_auth(self)
+        self.check_source_truth(self)
 
 
     def parse_headers(self,*args,**kwargs):
