@@ -1,37 +1,16 @@
-import requests
-import json
-import logging
-import time
-import functools
-import jwt
-import bugsnag
-import pytz
-import os
-import logging as log
 from abc import ABC,abstractmethod, ABCMeta
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import auth
 from firebase_admin.auth import Client
 from firebase_admin import firestore
-from flask import request
-from jwt import ExpiredSignatureError
-from time import perf_counter
-from datetime import datetime
-from utils.local_utils import google_client
 from flask import request,g
-from jose import jwk,jwt
-from jose.utils import base64url_decode
+from Engine.config import ConfigVariable
+import os
 
-#FIXME fix these imports before instantsiating the exampleClass
-from config import ConfigVariable
-from app.models.user import user
-from constants import CONSTANT_GROUPNAME
-from app.utils.user_utils import response_dict
-from config import ConfigVariable
-from utils import exception_utils, user_utils
-
-google_cred = credentials.Certificate(cert=ConfigVariable.GCP_SECRET)
+#google client constants
+gcp_secret = os.getenv("gcp_secret")
+google_cred = credentials.Certificate(cert=gcp_secret)
 google_default_app = firebase_admin.initialize_app(google_cred)
 google_client = Client(app=google_default_app)
 

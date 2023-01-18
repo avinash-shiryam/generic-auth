@@ -26,6 +26,15 @@
 2. Index the directory into a dictionary, into the **main.py** which is present in the **Engine/** 
 3. Run!
 
+### Notes
+
+#### Firebase
+    1. The "gcp_secret" must be embedded into a environment variable, instance present at "local_utils.py".
+#### CustomAuth
+    1. To run the custom authentication, the secret key must be embedded as an "environment variavle" -> "SECRET_KEY".
+
+#### AWS
+    1. Populate constants.py with the following variables "AWS_SECRET_DEV", "AWS_SECRET_PROD", "AWS_REGION".
 
 ##### Still confused?. Checkout the *exampleAuth.py* inside **examples/** directory
 
