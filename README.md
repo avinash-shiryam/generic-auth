@@ -28,13 +28,16 @@
 
 ### Notes
 
+#### Misc.
++ The response_dict which is used across authentication methods uses flask. It can be found under 'utils/user_utils.py'
+
 #### Firebase
-    1. The "gcp_secret" must be embedded into a environment variable, instance present at "local_utils.py".
+1. The "gcp_secret" must be embedded into a environment variable, instance present at "local_utils.py".
 #### CustomAuth
-    1. To run the custom authentication, the secret key must be embedded as an "environment variavle" -> "SECRET_KEY".
+1. To run the custom authentication, the secret key must be embedded as an "environment variavle" -> "SECRET_KEY".
 
 #### AWS
-    1. Populate constants.py with the following variables "AWS_SECRET_DEV", "AWS_SECRET_PROD", "AWS_REGION".
+1. Populate constants.py with the following variables "AWS_SECRET_DEV", "AWS_SECRET_PROD", "AWS_REGION".
 
 ##### Still confused?. Checkout the *exampleAuth.py* inside **examples/** directory
 
