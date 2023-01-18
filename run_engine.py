@@ -1,14 +1,17 @@
 from Engine.main import AuthEngine
 
-"""
-->example function which uses the AuthEngine as a decorator and performs the authentication process
-To run:
-1. 
-"""
 
 @AuthEngine
-def runner_function(*args,**kwargs):
-    return "functione executed successfully"
+def runner_function(*args, **kwargs):
+    """
+    This is an Example function to run the AuthEngine.
+    Steps
+    1. Create a function like the runner_function here and add the AuthEngine decorator
+    2. Add whatever functionality you want inside this function and call the function from wherever necessary, either
+        from a function or a class.
+    """
+    return "function executed successfully"
+
 
 # need to instantsiate the function with the calling_function variable
 runner_function(calling_function="aws")

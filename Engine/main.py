@@ -3,31 +3,42 @@ Authentication and Authorisation adapter module
 """
 
 from decorator import decorator
-from auth_connectors import AWSConnector, CustomAuthConnector,FirebaseConnector
+from auth_connectors import AWSConnector, CustomAuthConnector, FirebaseConnector
 
-auth_class_dict = {"aws" : AWSConnector.AWSAuth,
-                    "firebase" : FirebaseConnector.FirebaseAuth,
-                    "custom_auth" : CustomAuthConnector.CustomAuth}
+auth_class_dict = {
+    "aws": AWSConnector.AWSAuth,
+    "firebase": FirebaseConnector.FirebaseAuth,
+    "custom_auth": CustomAuthConnector.CustomAuth,
+}
+
+
 @decorator
 class AuthEngine:
 
     """
-        #FIXME
+    1. The AuthEngine takes care of calling the respective auth service with the "auth_type" variable provided to it.
+    2. This class acts as a decorator, and to call it
+        1. Create a function over which you want to use this decorator, and add it.
+        2. Call the function from wherever necessary to initialise and run the AuthEngine.
     """
 
-    def __init__(self,func,*args, **kwargs):
+    def __init__(self, func, *args, **kwargs):
 
         self.auth_type = kwargs.get("auth_type")
         self.select_auth_class(func)
 
-    def select_auth_class(self,func,*args,**kwargs):
+    def select_auth_class(self, func, *args, **kwargs):
 
         """
-            Note:
-            1. The __init__ method takes care of calling the functions at the auth_connectors.
+        Note:
+        1. The __init__ method takes care of calling the functions at the auth_connectors.
         """
 
-        class_instant = auth_class_dict.get(self.auth_type)(*args,**kwargs)
+        # a default "auth_type", in case if anything isn't passed.
+        if not self.auth_type:
+            self.auth_type = "aws"
+
+        class_instant = auth_class_dict.get(self.auth_type)(*args, **kwargs)
 
         # returns the original calling function of this decorator
-        return func(*args,**kwargs)
+        return func(*args, **kwargs)
