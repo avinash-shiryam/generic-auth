@@ -6,12 +6,7 @@ from utils.local_utils import exampleAuthFunction
 class FirebaseAuth(exampleAuthFunction):
     
     def __init__(self,*args,**kwargs):
-        self.executor_function(*args,**kwargs)
-
-    def executor_function(self,*args,**kwargs):
-        self.parse_headers(self)
-        self.validate_auth(self)
-        self.check_source_truth(self)
+        super.executor_function(*args,**kwargs)
 
     def parse_headers(self,*args,**kwargs):
         self.auth_token = super.parse_headers()
