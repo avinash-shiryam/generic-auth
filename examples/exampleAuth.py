@@ -2,15 +2,20 @@ from abc import ABC
 
 class AuthAsExample(ABC):
 
-    def __init__(self,*args,**kwargs):
-        pass
-
     """
         There are three functions which contribute in the authentication pipeline
         1. parse_headers
         2. validate_auth
         3. check_source_truth
     """
+    
+    def __init__(self,*args,**kwargs):
+        self.auth_token = None
+        self.message = None
+        self.public_key = None
+        self.decoded_signature = None
+        self.executor_function(*args,**kwargs)
+
 
     def executor_function(self,*args,**kwargs):
         self.parse_headers(self)
@@ -40,7 +45,7 @@ class AuthAsExample(ABC):
 
         if not self.public_key.verify(self.message.encode("utf8"), self.decoded_signature):
             # Signature verification failed
-            self.log.info("signature verification failed")
+            logging.info("signature verification failed")
             #return to executor_function as failed
             self.executor_function(status_token="header_fail")
             raise exception_utils.UserUnauthorizedError(message="Authentication failed")
@@ -51,6 +56,8 @@ class AuthAsExample(ABC):
             1. The check_source_truth() function carries out the check source of truth functionality of the authentication pipeline
             2. Here, the params which are pased throughout the authentication flow are compared against a local point of truth such as a database or a key
             3. This step helps prevent un recognised login attempts or authorisation attempts.
+            4. The function below will now compare if the recieved details actually match with the user_dict which is present above.
+            5. If the details match and there is a success response, then the flow continues, else an exception is raised an it breaks.
         """
 
         user_dict = {
@@ -63,11 +70,6 @@ class AuthAsExample(ABC):
             "006" : "Albert Kills Einstein",
             "007" : "Isaac dumb Newton",
         }
-
-        """
-            4. The function below will now compare if the recieved details actually match with the user_dict which is present above.
-            5. If the details match and there is a success response, then the flow continues, else an exception is raised an it breaks.
-        """
 
         try:
             self.user_obj = user_dict.get(params={"user_sub": self.sub})
