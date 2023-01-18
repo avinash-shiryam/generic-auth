@@ -85,7 +85,9 @@ class Base(db.Model):
         self.updated_at = datetime.datetime.now()
         log.info(f"update params: {update_params}")
         update_params["updated_at"] = self.updated_at
-        db.session.query(self.__class__).filter(*filter_param).update(update_params, synchronize_session='fetch')
+        db.session.query(self.__class__).filter(*filter_param).update(
+            update_params, synchronize_session="fetch"
+        )
         db.session.commit()
         if self.index_save:
             # External hooks
@@ -107,7 +109,9 @@ class Base(db.Model):
         Sets status of object as False in DB
         """
         self.deleted_at = datetime.datetime.now()
-        db.session.query(self.__class__).filter_by(**filter_param).update({"deleted_at": self.deleted_at})
+        db.session.query(self.__class__).filter_by(**filter_param).update(
+            {"deleted_at": self.deleted_at}
+        )
 
         db.session.commit()
         if self.index_save:
@@ -141,11 +145,24 @@ class Base(db.Model):
         Fetches data from DB where they match the query by column.
         """
         if order == "asc":
-            all_data_objects = db.session.query(self.__class__).filter_by(**params).order_by(asc(sort_by)).all()
+            all_data_objects = (
+                db.session.query(self.__class__)
+                .filter_by(**params)
+                .order_by(asc(sort_by))
+                .all()
+            )
         else:
-            all_data_objects = db.session.query(self.__class__).filter_by(**params).order_by(desc(sort_by)).all()
-        all_returnable_json_data = [json_data.to_response_dict() for json_data in all_data_objects if
-                                    json_data.deleted_at is None]
+            all_data_objects = (
+                db.session.query(self.__class__)
+                .filter_by(**params)
+                .order_by(desc(sort_by))
+                .all()
+            )
+        all_returnable_json_data = [
+            json_data.to_response_dict()
+            for json_data in all_data_objects
+            if json_data.deleted_at is None
+        ]
         return all_returnable_json_data
 
     def get_class_name(self):
@@ -153,11 +170,24 @@ class Base(db.Model):
 
     def fetch_by_provided_data(self, params, sort_by, order):
         if order == "asc":
-            multiple_objects = db.session.query(self.__class__).filter_by(**params).order_by(asc(sort_by)).all()
+            multiple_objects = (
+                db.session.query(self.__class__)
+                .filter_by(**params)
+                .order_by(asc(sort_by))
+                .all()
+            )
         else:
-            multiple_objects = db.session.query(self.__class__).filter_by(**params).order_by(desc(sort_by)).all()
-        all_returnable_json_data = [json_data.to_response_dict() for json_data in multiple_objects if
-                                    json_data.deleted_at is None]
+            multiple_objects = (
+                db.session.query(self.__class__)
+                .filter_by(**params)
+                .order_by(desc(sort_by))
+                .all()
+            )
+        all_returnable_json_data = [
+            json_data.to_response_dict()
+            for json_data in multiple_objects
+            if json_data.deleted_at is None
+        ]
         if all_returnable_json_data:
             return all_returnable_json_data
         return False
@@ -169,18 +199,23 @@ class Base(db.Model):
         try:
             json_data = []
             for col in col_name:
-                all_data_objects = db.session.query(self.__class__).filter(
-                    getattr(self.__class__, col).ilike(f"%{key.lower()}%")).all()
+                all_data_objects = (
+                    db.session.query(self.__class__)
+                    .filter(getattr(self.__class__, col).ilike(f"%{key.lower()}%"))
+                    .all()
+                )
                 for idx, value in enumerate(all_data_objects):
                     if all_data_objects[idx].deleted_at is None:
                         json_data.append(all_data_objects[idx].to_response_dict([]))
-            result = list({v['id']: v for v in json_data}.values())
+            result = list({v["id"]: v for v in json_data}.values())
             return result
         except Exception as e:
             log.error(e, exc_info=True)
             return False
 
-    def filter_query(model_class, query, filter_condition, order, sort_by, raw_query=""):
+    def filter_query(
+        model_class, query, filter_condition, order, sort_by, raw_query=""
+    ):
         """
         Return filtered queryset based on condition
         :param model_class: class object
@@ -207,30 +242,38 @@ class Base(db.Model):
             try:
                 key, op, value = raw
             except ValueError:
-                raise Exception('Invalid filter: %s' % raw)
+                raise Exception("Invalid filter: %s" % raw)
             column = getattr(model_class, key, None)
             if not column:
-                raise Exception('Invalid filter column: %s' % key)
-            if op == 'in':
+                raise Exception("Invalid filter column: %s" % key)
+            if op == "in":
                 if isinstance(value, list):
                     filt = column.in_(value)
                 else:
-                    filt = column.in_(value.split(','))
-            elif op == 'between':
+                    filt = column.in_(value.split(","))
+            elif op == "between":
                 if isinstance(value, list):
                     filt = column.between(value[0], value[1])
             else:
                 try:
-                    attr = list(filter(lambda e: hasattr(column, e % op), ['%s', '%s_', '__%s__']))[0] % op
+                    attr = (
+                        list(
+                            filter(
+                                lambda e: hasattr(column, e % op),
+                                ["%s", "%s_", "__%s__"],
+                            )
+                        )[0]
+                        % op
+                    )
                 except IndexError:
-                    raise Exception('Invalid filter operator: %s' % op)
-                if value == 'null':
+                    raise Exception("Invalid filter operator: %s" % op)
+                if value == "null":
                     value = None
 
                 filt = getattr(column, attr)(value)
             query = query.filter(filt)
         if order and sort_by:
-            if order == 'asc':
+            if order == "asc":
                 query = query.order_by(asc(sort_by))
             else:
                 query = query.order_by(desc(sort_by))

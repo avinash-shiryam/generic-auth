@@ -12,6 +12,7 @@ class ParameterError(Exception):
         super().__init__(self.message)
         return flask.abort(400, self.message)
 
+
 class UserUnauthorizedError(Exception):
     """Raise for errors when user does not have access to the group id"""
 

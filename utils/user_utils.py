@@ -1,6 +1,7 @@
 import json
 from flask import Response
 
+
 def response_dict(data=None, status=200, message="", total_count=0, page_number=0):
     """
     Returns a response object for DB searches

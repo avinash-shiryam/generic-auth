@@ -13,7 +13,6 @@ from Engine.models.user import user
 from Engine.config import ConfigVariable
 
 
-
 class AWSAuth(BaseAuthClass):
 
     """

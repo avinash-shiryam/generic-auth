@@ -19,8 +19,11 @@ def publish_message(phone_number, message):
         PhoneNumber=phone_number,
         Message=message,
         MessageAttributes={
-            'AWS.SNS.SMS.SenderID': {'DataType': 'String', 'StringValue': 'SENDERID'},
-            'AWS.SNS.SMS.SMSType': {'DataType': 'String', 'StringValue': 'Transactional'},
+            "AWS.SNS.SMS.SenderID": {"DataType": "String", "StringValue": "SENDERID"},
+            "AWS.SNS.SMS.SMSType": {
+                "DataType": "String",
+                "StringValue": "Transactional",
+            },
         },
     )
 
@@ -48,11 +51,11 @@ def check_file_existence_in_s3(bucket_name, file_path_in_bucket):
 
 
 def file_exists_in_s3(bucket_name, file_path):
-    s3 = boto3.resource('s3')
+    s3 = boto3.resource("s3")
     try:
         s3.Object(bucket_name, file_path).load()
     except ClientError as e:
-        if e.response['Error']['Code'] == "404":
+        if e.response["Error"]["Code"] == "404":
             return False
         else:
             # Something else has gone wrong.
@@ -66,7 +69,7 @@ def upload_file_to_s3(local_file_full_path, bucket_name, bucket_file_full_path):
     uploaded = False
     while not uploaded:
         try:
-            s3 = boto3.client('s3')
+            s3 = boto3.client("s3")
             s3.upload_file(local_file_full_path, bucket_name, bucket_file_full_path)
             uploaded = True
         except ClientError:
@@ -84,8 +87,10 @@ def upload_file_buffer_to_s3(file_buffer, bucket_name, bucket_file_full_path):
     uploaded = False
     while not uploaded:
         try:
-            s3 = boto3.client('s3')
-            s3.put_object(Body=file_buffer, Bucket=bucket_name, Key=bucket_file_full_path)
+            s3 = boto3.client("s3")
+            s3.put_object(
+                Body=file_buffer, Bucket=bucket_name, Key=bucket_file_full_path
+            )
             uploaded = True
         except ClientError:
             if retry_count >= 5:
@@ -94,8 +99,8 @@ def upload_file_buffer_to_s3(file_buffer, bucket_name, bucket_file_full_path):
             retry_count = retry_count + 1
 
 
-def fetch_s3_object_url(bucket_name, bucket_file_full_path, prefix='/', delimiter='/'):
-    region = boto3.client('s3')
+def fetch_s3_object_url(bucket_name, bucket_file_full_path, prefix="/", delimiter="/"):
+    region = boto3.client("s3")
     region = region.get_bucket_location(Bucket=bucket_name)["LocationConstraint"]
     obj_url = f"https://s3-{region}.amazonaws.com/{bucket_name}/{bucket_file_full_path}"
 
@@ -103,11 +108,13 @@ def fetch_s3_object_url(bucket_name, bucket_file_full_path, prefix='/', delimite
 
 
 def delete_s3_object(bucket_name, bucket_file_full_path):
-    s3 = boto3.client('s3')
+    s3 = boto3.client("s3")
     s3.delete_object(Bucket=bucket_name, Key=bucket_file_full_path)
 
 
-def rename_s3_object(content_id, new_filename, old_filename, file_format, new_file_format=None):
+def rename_s3_object(
+    content_id, new_filename, old_filename, file_format, new_file_format=None
+):
     """
     Rename s3 object
     """
@@ -119,11 +126,16 @@ def rename_s3_object(content_id, new_filename, old_filename, file_format, new_fi
     s3.Object(
         ConfigVariable.BUCKET_NAME,
         f"{ConfigVariable.BUCKET_PATH}/{content_id}/{new_filename}.{new_file_format}",
-    ).copy_from(CopySource=f"{ConfigVariable.BUCKET_NAME}/{ConfigVariable.BUCKET_PATH}/{content_id}/{old_filename}.{file_format}")
-    s3.Object(ConfigVariable.BUCKET_NAME, f"{ConfigVariable.BUCKET_PATH}/{content_id}/{old_filename}.{file_format}").delete()
+    ).copy_from(
+        CopySource=f"{ConfigVariable.BUCKET_NAME}/{ConfigVariable.BUCKET_PATH}/{content_id}/{old_filename}.{file_format}"
+    )
+    s3.Object(
+        ConfigVariable.BUCKET_NAME,
+        f"{ConfigVariable.BUCKET_PATH}/{content_id}/{old_filename}.{file_format}",
+    ).delete()
 
 
 def get_secret(secret_id, region):
-    client = boto3.client('secretsmanager', region_name=region)
+    client = boto3.client("secretsmanager", region_name=region)
     secret_ = client.get_secret_value(SecretId=secret_id)
-    return json.loads(secret_.get('SecretString'))
+    return json.loads(secret_.get("SecretString"))

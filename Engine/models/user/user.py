@@ -71,14 +71,18 @@ class User(base.Base):
         self.phone_number = data_dict.get("phone_number")
         self.name = data_dict.get("name")
         if data_dict.get("password"):
-            self.password = bcrypt.generate_password_hash(data_dict.get("password")).decode()
+            self.password = bcrypt.generate_password_hash(
+                data_dict.get("password")
+            ).decode()
         self.state = data_dict.get("state", "")
         self.industry_domain = data_dict.get("industry_domain")
         self.status = data_dict.get("status", "inactive")
         self.basic_info_json = json.dumps(data_dict.get("basic_info_json", {}))
         self.business_info_json = json.dumps(data_dict.get("business_info_json", {}))
         self.personal_info_json = json.dumps(data_dict.get("personal_info_json", {}))
-        self.authorisers_info_json = json.dumps(data_dict.get("authorisers_info_json", {}))
+        self.authorisers_info_json = json.dumps(
+            data_dict.get("authorisers_info_json", {})
+        )
         self.documents_json = json.dumps(data_dict.get("documents_json", {}))
         self.permissions = data_dict.get("permissions", [])
         self.total_accounts = data_dict.get("total_accounts", 0)
@@ -95,10 +99,18 @@ class User(base.Base):
         self.transaction_count = data_dict.get("transaction_count", 0)
         self.transaction_value = data_dict.get("transaction_value", 0.0)
         self.average_transaction = data_dict.get("average_transaction", 0.0)
-        self.onboard_data = data_dict.get("onboard_data") if data_dict.get("onboard_data") else {}
-        self.partner_name = data_dict.get("partner_name") if data_dict.get("partner_name") else "pending"
+        self.onboard_data = (
+            data_dict.get("onboard_data") if data_dict.get("onboard_data") else {}
+        )
+        self.partner_name = (
+            data_dict.get("partner_name")
+            if data_dict.get("partner_name")
+            else "pending"
+        )
         self.last_transaction_date = data_dict.get("last_transaction_date")
-        super().__init__(self.created_at, self.updated_at, self.group_id, self.deleted_at)
+        super().__init__(
+            self.created_at, self.updated_at, self.group_id, self.deleted_at
+        )
 
     def delete(self):
         """
@@ -148,7 +160,7 @@ class User(base.Base):
             "deleted_at": self.deleted_at,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
-            "last_transaction_date": self.last_transaction_date
+            "last_transaction_date": self.last_transaction_date,
         }
         [resp_dict.pop(x, None) for x in skip_list]
         return resp_dict
@@ -169,21 +181,35 @@ class User(base.Base):
             "state": self.state,
             "industry_domain": self.industry_domain,
             "status": self.status,
-            "basic_info_json": json.loads(self.basic_info_json) if self.basic_info_json else None,
-            "business_info_json": json.loads(self.business_info_json) if self.business_info_json else None,
-            "personal_info_json": json.loads(self.personal_info_json) if self.personal_info_json else None,
-            "authorisers_info_json": json.loads(self.authorisers_info_json) if self.authorisers_info_json else None,
-            "documents_json": json.loads(self.documents_json) if self.documents_json else None,
+            "basic_info_json": json.loads(self.basic_info_json)
+            if self.basic_info_json
+            else None,
+            "business_info_json": json.loads(self.business_info_json)
+            if self.business_info_json
+            else None,
+            "personal_info_json": json.loads(self.personal_info_json)
+            if self.personal_info_json
+            else None,
+            "authorisers_info_json": json.loads(self.authorisers_info_json)
+            if self.authorisers_info_json
+            else None,
+            "documents_json": json.loads(self.documents_json)
+            if self.documents_json
+            else None,
             "permissions": self.permissions,
             "total_accounts": self.total_accounts,
             "active_accounts": self.active_accounts,
             "total_balance": self.total_balance,
             "collections": self.collections,
             "meta_data": json.loads(self.meta_data) if self.meta_data else None,
-            "updated_at": self.updated_at.astimezone(timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")
+            "updated_at": self.updated_at.astimezone(timezone("Asia/Kolkata")).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
             if self.updated_at
             else None,
-            "last_accessed": self.last_accessed.astimezone(timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")
+            "last_accessed": self.last_accessed.astimezone(
+                timezone("Asia/Kolkata")
+            ).strftime("%Y-%m-%d %H:%M:%S")
             if self.last_accessed
             else None,
             "activate_on": self.activate_on,
@@ -192,18 +218,32 @@ class User(base.Base):
             "client_key": self.client_key,
             "client_secret_key": self.client_secret_key,
             "priority_status": self.priority_status,
-            "transaction_count": self.transaction_count if self.transaction_count else 0,
-            "transaction_value": self.transaction_value if self.transaction_value else 0.0,
-            "average_transaction": self.average_transaction if self.average_transaction else 0.0,
+            "transaction_count": self.transaction_count
+            if self.transaction_count
+            else 0,
+            "transaction_value": self.transaction_value
+            if self.transaction_value
+            else 0.0,
+            "average_transaction": self.average_transaction
+            if self.average_transaction
+            else 0.0,
             "partner_name": self.partner_name,
-            "registered_on": self.created_at.astimezone(timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")
+            "registered_on": self.created_at.astimezone(
+                timezone("Asia/Kolkata")
+            ).strftime("%Y-%m-%d %H:%M:%S")
             if self.created_at
             else None,
-            "last_transaction_date": self.last_transaction_date.astimezone(timezone('Asia/Kolkata')).strftime(
-                "%Y-%m-%d %H:%M:%S") if self.last_transaction_date else None,
-            "deleted_at": self.deleted_at.astimezone(timezone('Asia/Kolkata')).strftime(
-                "%Y-%m-%d %H:%M:%S") if self.deleted_at else None,
-            "onboard_data": self.onboard_data if self.onboard_data else {}
+            "last_transaction_date": self.last_transaction_date.astimezone(
+                timezone("Asia/Kolkata")
+            ).strftime("%Y-%m-%d %H:%M:%S")
+            if self.last_transaction_date
+            else None,
+            "deleted_at": self.deleted_at.astimezone(timezone("Asia/Kolkata")).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
+            if self.deleted_at
+            else None,
+            "onboard_data": self.onboard_data if self.onboard_data else {},
         }
         [resp_dict.pop(x, None) for x in skip_list]
         return resp_dict
@@ -214,7 +254,8 @@ class User(base.Base):
         """
         self.last_accessed = datetime.datetime.now()
         db.session.query(self.__class__).filter(self.__class__.id == self.id).update(
-            {"last_accessed": self.last_accessed})
+            {"last_accessed": self.last_accessed}
+        )
         db.session.commit()
 
     @staticmethod
@@ -224,7 +265,8 @@ class User(base.Base):
         """
         try:
             payload = {
-                "exp": datetime.datetime.utcnow() + datetime.timedelta(days=2, seconds=0),
+                "exp": datetime.datetime.utcnow()
+                + datetime.timedelta(days=2, seconds=0),
                 "iat": datetime.datetime.utcnow(),
                 "sub": email_id,
             }
@@ -284,7 +326,11 @@ class User(base.Base):
         Returns all user object from DB.
         """
         try:
-            all_data_objects = User.query.filter_by(deleted_at=None).order_by(User.created_at.desc()).all()
+            all_data_objects = (
+                User.query.filter_by(deleted_at=None)
+                .order_by(User.created_at.desc())
+                .all()
+            )
             json_data = []
             for idx, value in enumerate(all_data_objects):
                 json_data.append(all_data_objects[idx].to_response_dict([]))

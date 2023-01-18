@@ -26,8 +26,11 @@ class ActionLog(db.Model):
     def __init__(self, data_dict, action, actionable_type, last_edited_by):
         if data_dict is None:
             data_dict = {}
-        data_dict["updated_at"] = data_dict.get("updated_at").strftime("%Y-%m-%d %H:%M:%S")\
-            if data_dict.get("updated_at") else datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        data_dict["updated_at"] = (
+            data_dict.get("updated_at").strftime("%Y-%m-%d %H:%M:%S")
+            if data_dict.get("updated_at")
+            else datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        )
         self.action_id = data_dict.get("id")
         self.action = action
         self.actionable_type = actionable_type
