@@ -40,10 +40,14 @@ class BaseAuthClass(ABC):
 
         """
         BaseClass function for returning auth_token, functionality common for most auth connectors
-        """
 
-        if "AUTHORIZATION" in request.headers or "auth_token" in request.view_args:
-            auth_token = request.headers.get("AUTHORIZATION") or request.view_args.get(
+        Note.
+        1. The headers which are required for the pipeline must be sent in through "kwargs" for framework independency.
+        2. Native Flask implementation of "request.headers" or "request.view_args" is also included for flexibility.
+        """
+        request_headers=kwargs.get("request_headers")
+        if "AUTHORIZATION" in request_headers or "AUTHORIZATION" in request.headers or "auth_token" in request.view_args:
+            auth_token = request_headers.get("AUTHORIZATION") or request.headers.get("AUTHORIZATION") or request.view_args.get(
                 "auth_token"
             )
             return auth_token

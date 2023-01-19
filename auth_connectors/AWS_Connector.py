@@ -3,7 +3,7 @@ import jwt
 import logging
 import time
 from time import perf_counter
-from flask import g, request
+from flask import g
 from jose import jwk, jwt
 from jose.utils import base64url_decode
 from datetime import datetime
@@ -11,6 +11,13 @@ from utils import exception_utils
 from utils.local_utils import BaseAuthClass
 from Engine.models.user import user
 from Engine.config import ConfigVariable
+
+#format = {"user_sub":{"id":"000","user_name":"name","user_details":"details"}}
+local_mock_db = {
+        "007": {"id":"001","user_name":"James Bond", "user_details": "On a mission"},
+        "1221": {"id":"002","user_name":"John Doe", "user_details": "Eating food"},
+        "420": {"id":"003","user_name":"Salmon Boi", "user_details": "sleeping soundly"},
+        }
 
 
 class AWSAuth(BaseAuthClass):
@@ -134,26 +141,26 @@ class AWSAuth(BaseAuthClass):
             self.sub = claims.get("sub")
             self.group_names = claims.get("cognito:groups", [])
             # Multi session feature
-            self.check_multi_login_feature(self.auth_token, self.roup_names, self.sub)
-            user_obj = user.User.fetch_by_provided_data(params={"user_sub": self.sub})
+            self.check_multi_login_feature(self.auth_token, self.group_names, self.sub)
+            user_obj = local_mock_db.get(self.sub)
 
             if user_obj:
-                kwargs["id"] = user_obj.id
-                kwargs["user_sub"] = user_obj.user_sub
-                kwargs["email_id"] = user_obj.email_id
-                g.user_id = user_obj.id
+                kwargs["id"] = user_obj.get("id")
+                kwargs["user_name"] = user_obj.get("user_name")
+                kwargs["user_details"] = user_obj.get("user_details")
+                g.user_id = user_obj.get("id")
             else:
                 g.user_id = -1
                 logging.info("no user")
                 raise exception_utils.UserUnauthorizedError(
                     message="Authentication failed"
                 )
-            kwargs["group_names"] = self.group_names
             t1_stop = perf_counter()
             logging.info(
                 "Elapsed time for cognito decorator in seconds: %s",
                 t1_stop - self.t1_start,
             )
+            logging.info("data received as the following %s",kwargs)
         except:
             raise exception_utils.NoAuthTokenPresentError
 

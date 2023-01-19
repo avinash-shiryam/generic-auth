@@ -36,8 +36,8 @@ class AuthEngine:
 
         # a default "auth_type", in case if anything isn't passed.
         if not self.auth_type:
-            self.auth_type = "aws"
-
+            self.auth_type = "custom_auth"
+            
         class_instant = auth_class_dict.get(self.auth_type)(*args, **kwargs)
 
         # returns the original calling function of this decorator

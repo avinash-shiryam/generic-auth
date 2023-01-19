@@ -12,6 +12,13 @@ from utils.local_utils import BaseAuthClass
 from utils.local_utils import google_client
 from utils.user_utils import response_dict
 
+#format = {"user_sub":{"id":"000","user_email":"some@soem.com","user_name":"name","user_details":"details"}}
+local_mock_db = {
+        "007": {"id":"001","user_email":"jamesbond@missionfail.com","user_name":"James Bond", "user_details": "On a mission"},
+        "1221": {"id":"002","user_email":"johndoe@example.com","user_name":"John Doe", "user_details": "Eating food"},
+        "420": {"id":"003","user_email":"salmonboi@deerkill.com","user_name":"Salmon Boi", "user_details": "sleeping soundly"},
+        }
+
 
 class CustomAuth(BaseAuthClass):
     def __init__(self, *args, **kwargs):
@@ -35,7 +42,7 @@ class CustomAuth(BaseAuthClass):
 
         """
         Note.
-        1. the secret key must be an environment variable
+        1. The secret key to decode the token must be passed in as an environment variable.
         """
 
         if self.type_ != "Bearer":
@@ -63,30 +70,18 @@ class CustomAuth(BaseAuthClass):
             firebase_user_obj = google_client.get_user(user_sub)
             kwargs["email"] = firebase_user_obj.email
 
-            # FIXME : usertype object
-            user_type_obj = user.User()
+            # compares if the user_sub exists in the local database, if exists then flow, else fail
+            user_type_obj = local_mock_db.get("user_sub")
 
-            user_details = user_type_obj.fetch_by_email(firebase_user_obj.email)
-            if user_details:
+            if user_type_obj:
 
-                unique_user_id = user_details.get("unique_user_id")
+                kwargs["id"] = user_type_obj.get("id")
+                kwargs["user_email"] = user_type_obj.get("user_email")
+                kwargs["user_name"] = user_type_obj.get("user_name")
+                kwargs["user_details"] = user_type_obj.get("user_details")
 
-                kwargs["unique_user_id"] = unique_user_id
-                kwargs["sub_user_type"] = user_details.get("sub_user_type")
 
-                if unique_user_id:
-                    filter_params = {
-                        "user_type": self.payload.get("user_type"),
-                        "unique_user_id": unique_user_id,
-                    }
-                    user_type_obj.update(
-                        filter_params=filter_params,
-                        update_params={
-                            "last_accessed": datetime.now(pytz.utc).strftime(
-                                "%Y-%m-%d %H:%M:%S"
-                            )
-                        },
-                    )
+                return kwargs
 
         except:
             return response_dict(

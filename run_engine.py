@@ -1,7 +1,7 @@
 from Engine.main import AuthEngine
 
 
-@AuthEngine
+@AuthEngine(auth_type="aws")
 def runner_function(*args, **kwargs):
     """
     This is an Example function to run the AuthEngine.
@@ -10,8 +10,10 @@ def runner_function(*args, **kwargs):
     2. Add whatever functionality you want inside this function and call the function from wherever necessary, either
         from a function or a class.
     """
+
+    print(kwargs)
     return "function executed successfully"
 
 
 # need to instantsiate the function with the calling_function variable
-runner_function(calling_function="aws")
+runner_function()
