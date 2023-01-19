@@ -1,4 +1,4 @@
-from Engine.main import AuthEngine
+from engine.main import AuthEngine
 
 
 @AuthEngine(auth_type="aws")
