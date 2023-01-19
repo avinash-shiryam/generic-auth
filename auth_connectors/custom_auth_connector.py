@@ -58,15 +58,6 @@ class CustomAuth(BaseAuthClass):
     def check_source_truth(self, *args, **kwargs):
         try:
             user_sub = self.payload["user_sub"]
-
-            # FIXME: will be used in future, for now disabled.
-            # auth_token_info_cache = redis_utils.get(key=user_sub)
-            # auth_token_cache = auth_token_info_cache.get(requester_ip)
-
-            # if auth_token_cache != token:
-            #    log.info("request from ip: %s" % requester_ip)
-            #    return response_dict(status=401, data=None, message="Multiple login, please logout first")
-
             kwargs["user_sub"] = user_sub
 
             firebase_user_obj = google_client.get_user(user_sub)

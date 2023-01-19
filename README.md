@@ -29,7 +29,7 @@
 ### Notes
 
 #### Misc.
-+ The response_dict which is used across authentication methods uses flask. It can be found under 'utils/user_utils.py'
++ The response_dict which is used across authentication methods uses Flask. It can be found under 'utils/user_utils.py'. If your application doesnt use Flask, create a generic one of migrate it to your framework.
 
 #### Firebase
 1. The "gcp_secret" must be embedded into a environment variable, instance present at "local_utils.py".

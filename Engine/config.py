@@ -4,7 +4,7 @@ Config loading class
 import os
 from redis import Redis
 from utils.aws_utils import get_secret
-from Engine.constants import AWS_SECRET_DEV, AWS_SECRET_PROD, AWS_REGION
+from engine.constants import AWS_SECRET_DEV, AWS_SECRET_PROD, AWS_REGION
 
 os.environ.setdefault("APP_SETTINGS", "local")
 
