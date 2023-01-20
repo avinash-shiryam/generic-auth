@@ -142,25 +142,12 @@ class AWSAuth(BaseAuthClass):
             self.group_names = claims.get("cognito:groups", [])
             # Multi session feature
             self.check_multi_login_feature(self.auth_token, self.group_names, self.sub)
-            user_obj = local_mock_db.get(self.sub)
 
-            if user_obj:
-                kwargs["id"] = user_obj.get("id")
-                kwargs["user_name"] = user_obj.get("user_name")
-                kwargs["user_details"] = user_obj.get("user_details")
-                g.user_id = user_obj.get("id")
-            else:
-                g.user_id = -1
-                logging.info("no user")
-                raise exception_utils.UserUnauthorizedError(
-                    message="Authentication failed"
-                )
             t1_stop = perf_counter()
             logging.info(
                 "Elapsed time for cognito decorator in seconds: %s",
                 t1_stop - self.t1_start,
             )
-            logging.info("data received as the following %s",kwargs)
         except:
             raise exception_utils.NoAuthTokenPresentError
 
