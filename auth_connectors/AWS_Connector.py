@@ -13,12 +13,13 @@ from Engine.models.user import user
 from Engine.config import ConfigVariable
 from decorator import decorator
 
-#format = {"user_sub":{"id":"000","user_name":"name","user_details":"details"}}
+# format = {"user_sub":{"id":"000","user_name":"name","user_details":"details"}}
 local_mock_db = {
-        "007": {"id":"001","user_name":"James Bond", "user_details": "On a mission"},
-        "1221": {"id":"002","user_name":"John Doe", "user_details": "Eating food"},
-        "420": {"id":"003","user_name":"Salmon Boi", "user_details": "sleeping soundly"},
-        }
+    "007": {"id": "001", "user_name": "James Bond", "user_details": "On a mission"},
+    "1221": {"id": "002", "user_name": "John Doe", "user_details": "Eating food"},
+    "420": {"id": "003", "user_name": "Salmon Boi", "user_details": "sleeping soundly"},
+}
+
 
 @decorator
 class AWSAuth(BaseAuthClass):
@@ -27,7 +28,7 @@ class AWSAuth(BaseAuthClass):
     AWSAuth function takes care of the authentication pipeline using AWS
     """
 
-    def __init__(self,func, *args, **kwargs):
+    def __init__(self, func, *args, **kwargs):
 
         # None initialisations
         self.auth_token = None
@@ -38,7 +39,7 @@ class AWSAuth(BaseAuthClass):
         self.group_names = None
 
         self.t1_start = perf_counter()
-        super().executor_function(func,*args, **kwargs)
+        super().executor_function(func, *args, **kwargs)
 
     def get_contents(self, token):
         """

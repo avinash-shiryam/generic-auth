@@ -5,6 +5,8 @@ from flask import Response
     This response dict uses Flask. To use it independent of Flask, create a new response dict of your own
     or migrate it to your own framework
 """
+
+
 def response_dict(data=None, status=200, message="", total_count=0, page_number=0):
     """
     Returns a response object for DB searches
