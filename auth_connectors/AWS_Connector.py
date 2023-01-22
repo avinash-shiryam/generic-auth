@@ -11,6 +11,7 @@ from utils import exception_utils
 from utils.local_utils import BaseAuthClass
 from Engine.models.user import user
 from Engine.config import ConfigVariable
+from decorator import decorator
 
 #format = {"user_sub":{"id":"000","user_name":"name","user_details":"details"}}
 local_mock_db = {
@@ -19,14 +20,14 @@ local_mock_db = {
         "420": {"id":"003","user_name":"Salmon Boi", "user_details": "sleeping soundly"},
         }
 
-
+@decorator
 class AWSAuth(BaseAuthClass):
 
     """
     AWSAuth function takes care of the authentication pipeline using AWS
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self,func, *args, **kwargs):
 
         # None initialisations
         self.auth_token = None
@@ -37,7 +38,7 @@ class AWSAuth(BaseAuthClass):
         self.group_names = None
 
         self.t1_start = perf_counter()
-        super().executor_function(*args, **kwargs)
+        super().executor_function(func,*args, **kwargs)
 
     def get_contents(self, token):
         """
@@ -155,5 +156,7 @@ class AWSAuth(BaseAuthClass):
 
         """
         Note. The check_source_truth functionality must be implemented by the dev themselves.
+
+        1. The kwargs which contain data from check source of truth will be returned to the calling function
         """
-        pass
+        return kwargs

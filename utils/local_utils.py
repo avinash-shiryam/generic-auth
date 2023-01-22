@@ -25,15 +25,16 @@ class BaseAuthClass(ABC):
     def __init__(self, *args, **kwargs):
         self.executor_function(*args, **kwargs)
 
-    @abstractmethod
-    def executor_function(self, *args, **kwargs):
+    def executor_function(self,func, *args, **kwargs):
         """
         1.Function takes care of executing the below functions serially
         2. Child classes can directly run this function using "super.executor_function()"
         """
         self.parse_headers()
         self.validate_auth()
-        self.check_source_truth()
+        kwargs = self.check_source_truth()
+
+        return func(*args,**kwargs)
 
     @abstractmethod
     def parse_headers(self, *args, **kwargs):

@@ -7,12 +7,13 @@ local_mock_db = {
         "007": {"id":"001","user_email":"jamesbond@missionfail.com","user_name":"James Bond", "user_details": "On a mission"},
         "1221": {"id":"002","user_email":"johndoe@example.com","user_name":"John Doe", "user_details": "Eating food"},
         "420": {"id":"003","user_email":"salmonboi@deerkill.com","user_name":"Salmon Boi", "user_details": "sleeping soundly"},
-        }
+
+@decorator        }
 class FirebaseAuth(BaseAuthClass):
-    def __init__(self, *args, **kwargs):
+    def __init__(self,func, *args, **kwargs):
         self.auth_token = None
         self.type_ = None
-        super().executor_function(*args, **kwargs)
+        super().executor_function(func,*args, **kwargs)
 
     def parse_headers(self, *args, **kwargs):
         self.auth_token = super().parse_headers()
@@ -43,6 +44,8 @@ class FirebaseAuth(BaseAuthClass):
     def check_source_truth(self, *args, **kwargs):
         """
         Note. The check_source_truth functionality must be implemented by the dev themselves.
+
+        1. The kwargs which contain data from check source of truth will be returned to the calling function
         """
 
-        pass
+        return kwargs

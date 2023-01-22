@@ -11,6 +11,7 @@ from Engine.models.user import user
 from utils.local_utils import BaseAuthClass
 from utils.local_utils import google_client
 from utils.user_utils import response_dict
+from decorator import decorator
 
 #format = {"user_sub":{"id":"000","user_email":"some@soem.com","user_name":"name","user_details":"details"}}
 local_mock_db = {
@@ -18,14 +19,16 @@ local_mock_db = {
         "1221": {"id":"002","user_email":"johndoe@example.com","user_name":"John Doe", "user_details": "Eating food"},
         "420": {"id":"003","user_email":"salmonboi@deerkill.com","user_name":"Salmon Boi", "user_details": "sleeping soundly"},
         }
-
-
+@decorator
 class CustomAuth(BaseAuthClass):
-    def __init__(self, *args, **kwargs):
+    """
+    pass
+    """
+    def __init__(self,func, *args, **kwargs):
         self.auth_token = None
         self.type_ = None
         self.payload = None
-        super().executor_function(*args, **kwargs)
+        super().executor_function(func,*args, **kwargs)
 
     def parse_headers(self, *args, **kwargs):
         self.auth_token = super().parse_headers()
@@ -67,21 +70,19 @@ class CustomAuth(BaseAuthClass):
             user_sub = self.payload["user_sub"]
             kwargs["user_sub"] = user_sub
 
-            firebase_user_obj = google_client.get_user(user_sub)
-            kwargs["email"] = firebase_user_obj.email
 
-            # compares if the user_sub exists in the local database, if exists then flow, else fail
-            user_type_obj = local_mock_db.get("user_sub")
+            if local_mock_db.get(user_sub):
+                # active entry is the dataset of the current user_sub on whose behalf an authz request has been received
+                active_entry = local_mock_db.get(user_sub)
+                kwargs["id"] = active_entry.get("id")
+                kwargs["user_email"] = active_entry.get("user_email")
+                kwargs["user_name"] = active_entry.get("user_name")
+                kwargs["user_details"] = active_entry.get("user_details")
 
-            if user_type_obj:
-
-                kwargs["id"] = user_type_obj.get("id")
-                kwargs["user_email"] = user_type_obj.get("user_email")
-                kwargs["user_name"] = user_type_obj.get("user_name")
-                kwargs["user_details"] = user_type_obj.get("user_details")
+                logging.info("Authz request received and data as follows %s %s %s %s",kwargs["id"],kwargs["user_email"],kwargs["user_name"],kwargs["user_details"])
 
 
-                return kwargs
+            return kwargs
 
         except:
             return response_dict(
