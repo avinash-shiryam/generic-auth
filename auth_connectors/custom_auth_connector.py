@@ -7,7 +7,6 @@ from flask import request
 from datetime import datetime
 import pytz
 from jwt import ExpiredSignatureError
-from Engine.models.user import user
 from utils.local_utils import BaseAuthClass
 from utils.local_utils import google_client
 from utils.user_utils import response_dict

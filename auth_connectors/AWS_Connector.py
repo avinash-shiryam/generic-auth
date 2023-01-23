@@ -9,8 +9,7 @@ from jose.utils import base64url_decode
 from datetime import datetime
 from utils import exception_utils
 from utils.local_utils import BaseAuthClass
-from Engine.models.user import user
-from Engine.config import ConfigVariable
+from engine.config import ConfigVariable
 from decorator import decorator
 
 # format = {"user_sub":{"id":"000","user_name":"name","user_details":"details"}}
