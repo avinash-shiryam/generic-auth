@@ -1,18 +1,4 @@
 from abc import ABC, abstractmethod, ABCMeta
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import auth
-from firebase_admin.auth import Client
-from firebase_admin import firestore
-from flask import request, g
-from Engine.config import ConfigVariable
-import os
-
-# google client constants
-gcp_secret = os.getenv("gcp_secret")
-google_cred = credentials.Certificate(cert=gcp_secret)
-google_default_app = firebase_admin.initialize_app(google_cred)
-google_client = Client(app=google_default_app)
 
 
 class BaseAuthClass(ABC):

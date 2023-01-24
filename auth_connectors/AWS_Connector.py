@@ -2,6 +2,7 @@ import json
 import jwt
 import logging
 import time
+import os
 from time import perf_counter
 from flask import g
 from jose import jwk, jwt
@@ -9,15 +10,8 @@ from jose.utils import base64url_decode
 from datetime import datetime
 from utils import exception_utils
 from utils.local_utils import BaseAuthClass
-from engine.config import ConfigVariable
+from engine.config import local_mock_db, local_nium_token_dict
 from decorator import decorator
-
-# format = {"user_sub":{"id":"000","user_name":"name","user_details":"details"}}
-local_mock_db = {
-    "007": {"id": "001", "user_name": "James Bond", "user_details": "On a mission"},
-    "1221": {"id": "002", "user_name": "John Doe", "user_details": "Eating food"},
-    "420": {"id": "003", "user_name": "Salmon Boi", "user_details": "sleeping soundly"},
-}
 
 
 @decorator
@@ -61,14 +55,14 @@ class AWSAuth(BaseAuthClass):
         Check the session validity based on user sub
         """
 
-        existing_token = ConfigVariable.NIUM_ACCESS_TOKEN_DICT.get(user_sub)
+        existing_token = local_nium_token_dict.get(user_sub)
         if existing_token:
             existing_token = json.loads(existing_token.decode("utf-8"))
             existing_token = existing_token.get("auth_token")
         # update cache if no such data exists for the user
         if not existing_token:
-            ConfigVariable.NIUM_ACCESS_TOKEN_DICT.set(
-                name=user_sub,
+            local_nium_token_dict.update(
+                user_sub=user_sub,
                 value=json.dumps(
                     {
                         "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -88,6 +82,7 @@ class AWSAuth(BaseAuthClass):
         """
         Validates claims
         """
+        COGNITO_USER_POOL_ID = os.getenv("cognito_user_pool_id")
         if time.time() > claims["exp"]:
             # Token is expired
             raise exception_utils.ParameterError(
@@ -95,7 +90,7 @@ class AWSAuth(BaseAuthClass):
             )
         iss = claims.get("iss")
         iss = iss[iss.rfind("/") + 1 :]
-        if iss != ConfigVariable.COGNITO_USER_POOL_ID:
+        if iss != COGNITO_USER_POOL_ID:
             logging.info("issuer mismatch")
             # Issuer claim mismatch
             raise exception_utils.UserUnauthorizedError(message="Authentication failed")
@@ -105,7 +100,9 @@ class AWSAuth(BaseAuthClass):
         Multi Login feature check and invoke
         Multi session feature support enable or disable as per env
         """
-        if ConfigVariable.IS_SECURE:
+
+        IS_SECURE = False # for cognito
+        if IS_SECURE:
             if self._check_session_validity(
                 current_token=token, user_sub=sub, groups=group_names
             ):
@@ -149,6 +146,8 @@ class AWSAuth(BaseAuthClass):
                 "Elapsed time for cognito decorator in seconds: %s",
                 t1_stop - self.t1_start,
             )
+
+            # FIXME : implement checking and validation from local mock db
         except:
             raise exception_utils.NoAuthTokenPresentError
 

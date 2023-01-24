@@ -135,6 +135,7 @@ class AuthAsExample():
 
 #### AWS
 1. Populate constants.py with the following variables "AWS_SECRET_DEV", "AWS_SECRET_PROD", "AWS_REGION".
+2. Add "cognito_user_pool_id" with data through env vars.
 
 ##### Still confused?. Checkout the *exampleAuth.py* inside **examples/** directory
 

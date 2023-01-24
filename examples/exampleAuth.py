@@ -18,6 +18,7 @@ Notes:
 """
 
 from engine.main import AuthEngine
+from flask import request
 
 
 @AuthEngine(auth_typ="aws")
@@ -29,6 +30,13 @@ def some_runner_function(*args, **kwargs):
 
 
 # call the function from this file or any other module of the project either directly or using a decorator call
+
+request_headers  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJoZWxsbyI6IjEyMyIsImlhdCI6MTY3NDM3MjgwMn0.IHYJDVezjZHUpbvcBsDjUfG3l1m18As6b_L87XzuXDk"
+
+# if no request header is recieved, we will use flask to send a request header
+if not request_headers:
+    request_headers = request.header
+
 some_runner_function(
-    request_headers="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJoZWxsbyI6IjEyMyIsImlhdCI6MTY3NDM3MjgwMn0.IHYJDVezjZHUpbvcBsDjUfG3l1m18As6b_L87XzuXDk"
+    request_headers=request_headers
 )

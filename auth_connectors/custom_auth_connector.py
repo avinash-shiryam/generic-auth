@@ -8,31 +8,9 @@ from datetime import datetime
 import pytz
 from jwt import ExpiredSignatureError
 from utils.local_utils import BaseAuthClass
-from utils.local_utils import google_client
 from utils.user_utils import response_dict
+from engine.config import local_mock_db
 from decorator import decorator
-
-# format = {"user_sub":{"id":"000","user_email":"some@soem.com","user_name":"name","user_details":"details"}}
-local_mock_db = {
-    "007": {
-        "id": "001",
-        "user_email": "jamesbond@missionfail.com",
-        "user_name": "James Bond",
-        "user_details": "On a mission",
-    },
-    "1221": {
-        "id": "002",
-        "user_email": "johndoe@example.com",
-        "user_name": "John Doe",
-        "user_details": "Eating food",
-    },
-    "420": {
-        "id": "003",
-        "user_email": "salmonboi@deerkill.com",
-        "user_name": "Salmon Boi",
-        "user_details": "sleeping soundly",
-    },
-}
 
 
 @decorator
